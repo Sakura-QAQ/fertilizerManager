@@ -58,8 +58,16 @@ export default {
     }
   },
   created () {
+    this.list();
   },
   methods: {
+    // 获取列表
+    async list () {
+      const { data: { data } } = await this.$http.post('http://192.168.1.254:10010/sso/api/user/list')
+      // this.proList = data;
+      console.log(JSON.stringify(data) );
+      console.log('hahahaha');
+    },
     // 编辑
     edit (id) {
     },
