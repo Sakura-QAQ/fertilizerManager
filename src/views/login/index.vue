@@ -59,7 +59,7 @@ export default {
               this.$message.error('密码错误')
               return false
             } else if (res.data.code === 200) {
-              this.$message.success('登录成功！请选择园区')
+              this.$message.success('登录成功！')
               // 存数据
               window.sessionStorage.setItem('token', JSON.stringify(res.data.data))
               // 跳路由
