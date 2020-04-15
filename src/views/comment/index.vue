@@ -63,13 +63,24 @@
         <el-table-column label="dtu码" prop="dtuCode"></el-table-column>
         <el-table-column label="阀类型" prop="valveType"></el-table-column>
         <el-table-column label="版本号" prop="version"></el-table-column>
-        <el-table-column label="操作" width="120">
+        <el-table-column label="操作">
           <template slot-scope="scope">
             <el-button icon="el-icon-edit" circle plain type="primary" @click="editFerList(scope.$index, scope.row)"></el-button>
             <el-button icon="el-icon-delete" circle plain type="danger" @click="del(scope.$index, scope.row)" ></el-button>
+            <el-button icon="el-icon-more-outline" circle plain type="info" @click="editValves(scope.$index, scope.row)"></el-button>
           </template>
         </el-table-column>
       </el-table>
+      <el-dialog class="Valve" style="margin-top:20px;" :visible.sync="dialogValve">
+        <h2>阀名编辑</h2>
+        <div v-for="(item, index) in ValveName" :key="index">
+          <el-input v-model="ValveName[index]"></el-input>
+        </div>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogValve = false">取 消</el-button>
+          <el-button type="primary" @click="submitValvesName()">确 定</el-button>
+        </div>
+      </el-dialog>
     </el-card>
   </div>
 </template>
@@ -109,7 +120,13 @@ export default {
         version: ''
       },
       // 弹出层
-      dialogFormVisible: false
+      dialogFormVisible: false,
+      // 阀弹出层
+      dialogValve: false,
+      // 阀名称
+      ValveName: ['1#', '2#', '3#', '4#', '5#', '6#', '7#', '8#', '9#', '10#', '11#', '12#', '13#', '14#', '15#', '16#', '17#', '18#', '19#', '20#', '21#', '22#', '23#', '24#', '25#', '26#', '27#', '28#', '29#', '30#', '31#', '32#', '33#', '34#', '35#', '36#', '37#', '38#', '39#', '40#', '41#', '42#', '43#', '44#', '45#', '46#', '47#', '48#', '49#', '50#', '51#', '52#', '53#', '54#', '55#', '56#', '57#', '58#', '59#', '60#', '61#', '62#', '63#', '64#'],
+      // 提交阀的施肥机id
+      ferValveId: ''
     }
   },
   mounted () {
@@ -189,6 +206,24 @@ export default {
         // 版本号
         version: ''
       }
+    },
+    // 弹出阀号名称
+    async editValves (index, row) {
+      this.dialogValve = true
+      this.ferValveId = row.id
+      const ferId = {
+        id: row.id
+      }
+      const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryValveAlias', ferId)
+      this.ValveName = data.split(',')
+    },
+    async submitValvesName () {
+      const obj = {
+        id: this.ferValveId,
+        valveAlias: this.ValveName.join(',')
+      }
+      await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/updateValveAlias', obj)
+      this.dialogValve = false
     }
   }
 }
@@ -198,6 +233,19 @@ export default {
 .container {
   /deep/.el-dialog {
     width: 650px !important;
+  }
+  /deep/ .Valve {
+    .el-dialog__body {
+      width: 600px;
+      height: 450px;
+      margin: 0 auto;
+      > div {
+        float: left;
+        width: 72px;
+        margin-right: 3px;
+        margin-top: 3px;
+      }
+    }
   }
 }
 </style>

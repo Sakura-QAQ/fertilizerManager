@@ -33,7 +33,7 @@
         </el-menu-item>
         <el-menu-item index="/fans">
           <i class="el-icon-present"></i>
-          <span slot="title">备用</span>
+          <span slot="title">温室管理</span>
         </el-menu-item>
         <el-menu-item index="/setting">
           <i class="el-icon-setting"></i>
