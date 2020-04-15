@@ -2,7 +2,7 @@
   <div>
     <el-card>
       <div slot="header">
-        <my-bread>个人设置</my-bread>
+        <my-bread>温室管理</my-bread>
       </div>
     </el-card>
   </div>
