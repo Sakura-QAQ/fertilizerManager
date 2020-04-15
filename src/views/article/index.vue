@@ -5,35 +5,66 @@
       <div slot="header">
         <my-bread>用户管理</my-bread>
       </div>
-      
-      <!-- <el-table>
-        <el-table-column label="用户名" prop="title"></el-table-column>
-        <el-table-column label="用户状态">
-          <template slot-scope="scope">
-            <el-tag v-if="scope.row.status === 0" type="info">草稿</el-tag>
-            <el-tag v-if="scope.row.status === 1">待审核</el-tag>
-            <el-tag v-if="scope.row.status === 2" type="success">审核通过</el-tag>
-            <el-tag v-if="scope.row.status === 3" type="warning">审核失败</el-tag>
-            <el-tag v-if="scope.row.status === 4" type="danger">已删除</el-tag>
-          </template>
-        </el-table-column>
+
+      <el-table :data="userList">
+        <el-table-column label="用户名" prop="name"></el-table-column>
+        <el-table-column label="手机号" prop="telephone"></el-table-column>
+        <el-table-column label="邮箱" prop="email"></el-table-column>
+        <el-table-column label="创建时间" prop="createTime"></el-table-column>
+        <el-table-column label="修改时间" prop="updateTime"></el-table-column>
         <el-table-column label="操作" width="120">
-          <template>
-            <el-button icon="el-icon-edit" circle plain type="primary"></el-button>
-            <el-button icon="el-icon-delete" circle plain type="danger"></el-button>
+          <template slot-scope="scope">
+            <el-button @click="editUser(scope.row)" type="text" size="small">编辑</el-button>
+            <el-button @click="bindProject(scope.row.id)" type="text" size="small">绑定项目</el-button>
           </template>
         </el-table-column>
       </el-table>
+
+      <el-dialog title="绑定项目" :visible.sync="projectFormVisible">
+        <el-form :model="project">
+          <el-checkbox-group v-model="project.pids">
+            <el-checkbox v-for="item in projects" :key="item.id" :label="item.id">{{item.name}}</el-checkbox>
+          </el-checkbox-group>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="submit2">确 定</el-button>
+        </div>
+      </el-dialog>
+
+      <el-dialog title="用户编辑" :visible.sync="dialogFormVisible">
+        <el-form :model="form">
+          <el-form-item label="用户名" :label-width="formLabelWidth">
+            <el-input v-model="form.name" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="密码" :label-width="formLabelWidth">
+            <el-input v-model="form.password" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="手机号" :label-width="formLabelWidth">
+            <el-input v-model="form.telephone" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="邮箱" :label-width="formLabelWidth">
+            <el-input v-model="form.email" autocomplete="off"></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogFormVisible = false">取 消</el-button>
+          <el-button type="primary" @click="submit">确 定</el-button>
+        </div>
+      </el-dialog>
+
       <div class="box">
         <el-pagination
           background
           layout="prev, pager, next"
-          @current-change="pager"
-          :current-page="reqParams.page"
-          :page-size="reqParams.per_page"
+          @current-change="currentchange"
+          @next-click="nextpage"
+          @prev-click="prevpage"
+          :current-page="page"
+          :page-size="pageSize"
           :total="total"
         ></el-pagination>
-      </div> -->
+      </div>
     </el-card>
   </div>
 </template>
@@ -41,49 +72,175 @@
 <script>
 export default {
   components: {},
-  data () {
+  data() {
     return {
-      // 提交后筛选条件
-      reqParams: {
-        page: 1,
-        per_page: 20,
-        // 默认数据''和null的区别
-        // 如果是null 该字段是不会提交给后台
-        status: null,
-        channel_id: null,
-        begin_pubdate: null,
-        end_pubdate: null
+      userList: null,
+      page: 1,
+      pageSize: 10,
+      total: 0,
+      dialogFormVisible: false,
+      projectFormVisible: false,
+      form: {
+        name: "aa",
+        telephone: "",
+        email: "",
+        password: ""
       },
-      total: 0
-    }
+      project: {
+        uid: "",
+        pids: []
+      },
+      projects: [],
+      formLabelWidth: "120px"
+    };
   },
-  created () {
+
+  created() {
     this.list();
   },
   methods: {
+    cancel:function(){
+      this.projectFormVisible = false;
+       this.project.uid="";
+      this.project.pids=[];
+    },
+    async submit2() {
+      const {
+        data: { data }
+      } = await this.$http.post(
+        "http://192.168.1.254:10010/sso/api/user/bindProject",
+        this.project
+      );
+      this.projectFormVisible = false;
+      this.project.uid="";
+      this.project.pids=[];
+      if (data) {
+        this.$message({
+          message: "绑定成功！",
+          type: "success"
+        });
+        this.list();
+      } else {
+        this.$message.error("绑定失败！");
+      }
+    },
+
+    bindProject: function(id) {
+      this.project.uid = id;
+      this.projectFormVisible = true;
+      this.getprojects();
+    },
+    async getprojects() {
+      const {
+        data: { data }
+      } = await this.$http.post(
+        "http://192.168.1.254:10010/sso/api/project/queryAllByManager"
+      );
+      this.projects = data;
+      console.log(JSON.stringify(data));
+    },
+    async submit() {
+      const {
+        data: { data }
+      } = await this.$http.post(
+        "http://192.168.1.254:10010/sso/api/user/update",
+        this.form
+      );
+      this.list();
+      this.dialogFormVisible = false;
+      if (data) {
+        this.$message({
+          message: "修改成功！",
+          type: "success"
+        });
+        this.list();
+      } else {
+        this.$message.error("修改失败！");
+      }
+    },
+    editUser: function(item) {
+      item.password = "";
+      this.form = item;
+      console.log(JSON.stringify(item));
+      this.dialogFormVisible = true;
+    },
+    currentchange(page) {
+      this.page = page;
+      this.list();
+    },
+    prevpage() {
+      this.page = this.page - 1;
+      this.list();
+    },
+    nextpage() {
+      this.page = this.page + 1;
+      this.list();
+    },
     // 获取列表
-    async list () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10010/sso/api/user/list')
-      // this.proList = data;
-      console.log(JSON.stringify(data) );
-      console.log('hahahaha');
+    async list() {
+      const {
+        data: { data }
+      } = await this.$http.post(
+        "http://192.168.1.254:10010/sso/api/user/list",
+        { page: this.page, pageSize: this.pageSize, user: {} }
+      );
+      this.userList = data.data;
+      this.total = data.total;
+      console.log(JSON.stringify(data));
+    },
+    async updateUser(id) {
+      const {
+        data: { data }
+      } = await this.$http.post(
+        "http://192.168.1.254:10010/sso/api/user/deleteUser",
+        { id: id }
+      );
+      if (data) {
+        this.$message({
+          message: "删除成功！",
+          type: "success"
+        });
+        this.list();
+      } else {
+        this.$message.error("删除失败！");
+      }
+
+      console.log(JSON.stringify(data));
+    },
+    async deleteUser(id) {
+      const {
+        data: { data }
+      } = await this.$http.post(
+        "http://192.168.1.254:10010/sso/api/user/deleteUser",
+        { id: id }
+      );
+      if (data) {
+        this.$message({
+          message: "删除成功！",
+          type: "success"
+        });
+        this.list();
+      } else {
+        this.$message.error("删除失败！");
+      }
+
+      console.log(JSON.stringify(data));
     },
     // 编辑
-    edit (id) {
-    },
+    edit(id) {},
     // 删除
-    del (id) {
-    },
+    del(id) {},
     // 分页
-    pager (newPage) {
+    pager(newPage) {
       // 提交当前页码给后台才能获取对应的数据
-      this.reqParams.page = newPage
+      this.reqParams.page = newPage;
     },
     // 获取数据
-    async getArticles () {
+    async getArticles() {
+      console.log("hahahahaha");
     }
   }
-}
+};
 </script>
 
 <style lang="less" scoped>

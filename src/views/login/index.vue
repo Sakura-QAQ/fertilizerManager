@@ -26,8 +26,8 @@ export default {
     return {
       loading: false,
       loginForm: {
-        name: 'zhanglongtao12',
-        password: 'zhanglongtao1234'
+        name: '',
+        password: ''
       },
       loginRules: {
         name: [
