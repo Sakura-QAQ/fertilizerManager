@@ -71,7 +71,6 @@
 
 <script>
 export default {
-  components: {},
   data() {
     return {
       userList: null,
@@ -88,7 +87,7 @@ export default {
       },
       project: {
         uid: "",
-        pids: []
+        pids: [""]
       },
       projects: [],
       formLabelWidth: "120px"
@@ -116,27 +115,29 @@ export default {
       this.project.pids=[];
       if (data) {
         this.$message({
-          message: "绑定成功！",
+          message: "操作成功！",
           type: "success"
         });
         this.list();
       } else {
-        this.$message.error("绑定失败！");
+        console.log(data);
+        this.$message.error("操作失败！");
       }
     },
 
     bindProject: function(id) {
       this.project.uid = id;
       this.projectFormVisible = true;
-      this.getprojects();
+      this.getprojects(id);
     },
-    async getprojects() {
+    async getprojects(id) {
       const {
         data: { data }
       } = await this.$http.post(
-        "http://192.168.1.254:10010/sso/api/project/queryAllByManager"
+        "http://192.168.1.254:10010/sso/api/project/queryAllByManager",{uid:id}
       );
-      this.projects = data;
+      this.projects = data.projects;
+      this.project.pids = data.pids;
       console.log(JSON.stringify(data));
     },
     async submit() {
