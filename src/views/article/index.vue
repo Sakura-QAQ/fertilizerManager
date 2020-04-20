@@ -138,7 +138,6 @@ export default {
       );
       this.projects = data.projects;
       this.project.pids = data.pids;
-      console.log(JSON.stringify(data));
     },
     async submit() {
       const {
@@ -187,7 +186,6 @@ export default {
       );
       this.userList = data.data;
       this.total = data.total;
-      console.log(JSON.stringify(data));
     },
     async updateUser(id) {
       const {
