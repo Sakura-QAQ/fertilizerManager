@@ -1,20 +1,43 @@
 <template>
   <div class="image-container">
     <el-card>
-      <div slot="header">
+      <div solt="header">
         <my-bread>园区管理</my-bread>
+        <el-form align="right">
+          <el-button type="primary" @click="add">添加园区</el-button>
+        </el-form>
+        <el-dialog :visible.sync="dialogFlag">
+          <el-form :model="addList">
+            <el-form-item label="项目名称：">
+              <el-input v-model="addList.name"></el-input>
+            </el-form-item>
+            <el-form-item label="项目描述：">
+              <el-input type="textarea" v-model="addList.descr"></el-input>
+            </el-form-item>
+            <el-form-item label="园区场景：">
+              <el-upload
+                class="upload-demo"
+                name="avatarfile"
+                ref="upload"
+                action="http://192.168.1.254:10010/sso/api/project/updateAvatar"
+                :headers="TokenBus"
+                :on-preview="handlePreview"
+                :on-remove="handleRemove"
+                :file-list="fileList"
+                :auto-upload="false"
+                :on-success="handleBannerSuccess">
+                <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+                <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+                <div slot="tip" class="el-upload__tip">只能上传jpg/png文件</div>
+              </el-upload>
+            </el-form-item>
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogFlag = false">取 消</el-button>
+            <el-button type="primary" @click="submitproject">确 定</el-button>
+          </div>
+        </el-dialog>
       </div>
-      <el-form :model="addList">
-        <el-form-item label="项目名">
-          <el-input v-model="addList.name"></el-input>
-        </el-form-item>
-        <el-form-item label="项目描述">
-          <el-input v-model="addList.descr"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="addproject">提交</el-button>
-        </el-form-item>
-      </el-form>
     </el-card>
     <el-card>
       <el-table :data="proList">
@@ -42,11 +65,20 @@ export default {
       addList: {
         id: '',
         name: '',
-        descr: ''
-      }
+        descr: '',
+        situationUrl: ''
+      },
+      dialogFlag: false,
+      fileList: [],
+      TokenBus: {
+        token: ''
+      },
+      imgUrl: 'http://192.168.1.254:10010/image/avatar/'
     }
   },
   created () {
+    const token = JSON.parse(window.sessionStorage.getItem('token')).token
+    this.TokenBus.token = token
     this.getproject()
   },
   methods: {
@@ -55,8 +87,15 @@ export default {
       const { data: { data } } = await this.$http.post('http://192.168.1.254:10010/sso/api/project/queryAllByUser')
       this.proList = data
     },
-    // 添加项目
-    async addproject () {
+    add () {
+      this.dialogFlag = true
+      this.addList.id = ''
+      this.addList.name = ''
+      this.addList.descr = ''
+      this.addList.situationUrl = ''
+    },
+    // 提交项目
+    async submitproject () {
       if (this.addList.name === '') {
         this.$message.error('名字不能为空')
         return false
@@ -64,18 +103,26 @@ export default {
         this.$message.error('描述不能为空')
         return false
       } else {
-        await this.$http.post('http://192.168.1.254:10010/sso/api/project/saveOrUpdate', this.addList)
-        this.$message.success('提交成功')
-        this.addList.name = ''
-        this.addList.descr = ''
-        this.getproject()
+        const { data: { data } } = await this.$http.post('http://192.168.1.254:10010/sso/api/project/saveOrUpdate', this.addList)
+        if (data === true) {
+          this.$message.success('提交成功')
+          this.addList.id = ''
+          this.addList.name = ''
+          this.addList.descr = ''
+          this.addList.situationUrl = ''
+          this.dialogFlag = false
+          this.getproject()
+        }
       }
     },
     // 编辑项目
     async editproject (index, row) {
+      console.log(row)
+      this.dialogFlag = true
       this.addList.id = row.id
       this.addList.name = row.name
       this.addList.descr = row.descr
+      this.addList.situationUrl = row.situationUrl
     },
     async del (index, row) {
       const obj = {
@@ -97,46 +144,45 @@ export default {
           this.getproject()
         })
         .catch(() => {})
+    },
+    // 上传文件
+    submitUpload () {
+      this.$refs.upload.submit()
+    },
+    // 删除文件
+    handleRemove (file, fileList) {
+      console.log(file, fileList)
+    },
+    // 点击文件
+    handlePreview (file) {
+      console.log(file)
+    },
+    handleBannerSuccess (response) {
+      this.addList.situationUrl = response.data
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
-.image-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  li {
-    width: 180px;
-    height: 180px;
-    border: 1px dashed #eee;
-    float: left;
-    margin-right: 50px;
-    margin-bottom: 20px;
-    position: relative;
-    img {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-    .fot {
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      width: 100%;
-      height: 30px;
-      line-height: 30px;
-      text-align: center;
-      background: rgba(0, 0, 0, 0.5);
-      color: #fff;
-      span {
-        margin: 0 20px;
-        &.red {
-          color: red;
-        }
+.image-container {
+  /deep/.el-dialog {
+    width: 680px !important;
+  }
+  /deep/ .el-dialog__body {
+    .el-form {
+      .el-form-item__content {
+        float: left;
+        margin-left: 20px !important;
       }
+    }
+  }
+  /deep/ .el-dialog__footer {
+    text-align: right;
+  }
+  /deep/ .el-form {
+    .el-form-item__content {
+      width: 300px;
     }
   }
 }

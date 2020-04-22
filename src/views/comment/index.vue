@@ -22,7 +22,7 @@
         </el-card>
         <!-- 对话层 -->
         <el-dialog style="margin-top:20px;" :visible.sync="dialogFormVisible">
-          <el-form :model="addFerList"  label-width="120px" style="width:400px;margin: 0 auto;">
+          <el-form :model="addFerList"  label-width="120px">
             <el-form-item label="产品编号：">
               <el-input v-model="addFerList.prodCode"></el-input>
             </el-form-item>
@@ -43,6 +43,16 @@
             </el-form-item>
             <el-form-item label="版本号：">
               <el-input v-model="addFerList.version"></el-input>
+            </el-form-item>
+            <el-form-item label="阀号：">
+              <el-checkbox-group v-model="checkboxGroup">
+                <template v-for="(item, index) in ValveName">
+                  <el-checkbox-button :label="index + 1" :key="index" v-show="cut(index)">
+                    <div class="valve_num">{{index + 1}}</div>
+                  </el-checkbox-button>
+                </template>
+              </el-checkbox-group>
+              <el-button type="info" :icon="icons" circle @click="showall"></el-button>
             </el-form-item>
           </el-form>
           <div slot="footer" class="dialog-footer">
@@ -101,6 +111,7 @@ export default {
       proID: {
         projectId: ''
       },
+      checkboxGroup: [],
       // 园区列表
       proList: [],
       // 施肥机列表
@@ -117,12 +128,18 @@ export default {
         // 阀类型
         valveType: 0,
         // 版本号
-        version: ''
+        version: '',
+        // 阀号
+        valveNum: ''
       },
       // 弹出层
       dialogFormVisible: false,
       // 阀弹出层
       dialogValve: false,
+      // 阀显示隐藏
+      isActive: false,
+      // 图标
+      icons: 'el-icon-caret-bottom',
       // 阀名称
       ValveName: ['1#', '2#', '3#', '4#', '5#', '6#', '7#', '8#', '9#', '10#', '11#', '12#', '13#', '14#', '15#', '16#', '17#', '18#', '19#', '20#', '21#', '22#', '23#', '24#', '25#', '26#', '27#', '28#', '29#', '30#', '31#', '32#', '33#', '34#', '35#', '36#', '37#', '38#', '39#', '40#', '41#', '42#', '43#', '44#', '45#', '46#', '47#', '48#', '49#', '50#', '51#', '52#', '53#', '54#', '55#', '56#', '57#', '58#', '59#', '60#', '61#', '62#', '63#', '64#'],
       // 提交阀的施肥机id
@@ -163,6 +180,7 @@ export default {
     // 提交施肥机表单
     async submitFerForm () {
       this.addFerList.projectId = this.proID.projectId
+      this.addFerList.valveNum = this.checkboxGroup.join(',')
       await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/saveOrUpdate', this.addFerList)
       this.dialogFormVisible = false
       this.getFerList().then(res => {
@@ -180,6 +198,7 @@ export default {
     // 编辑施肥机
     async editFerList (index, row) {
       this.dialogFormVisible = true
+      this.checkboxGroup = row.valveNum.split(',').map(Number)
       this.addFerList = {
         id: row.id,
         projectId: row.projectId,
@@ -193,6 +212,7 @@ export default {
     },
     // 恢复默认 (直接调用)
     clear () {
+      this.checkboxGroup = []
       this.addFerList = {
         projectId: '',
         // 产品编号
@@ -204,7 +224,9 @@ export default {
         // 阀类型
         valveType: 0,
         // 版本号
-        version: ''
+        version: '',
+        // // 阀号
+        valveNum: ''
       }
     },
     // 弹出阀号名称
@@ -217,6 +239,7 @@ export default {
       const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryValveAlias', ferId)
       this.ValveName = data.split(',')
     },
+    // 提交阀名
     async submitValvesName () {
       const obj = {
         id: this.ferValveId,
@@ -224,6 +247,24 @@ export default {
       }
       await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/updateValveAlias', obj)
       this.dialogValve = false
+    },
+    // 阀索引函数条件
+    cut (index) {
+      if (this.isActive === false) {
+        return index < 8
+      } else if (this.isActive === true) {
+        return !index < 8
+      }
+    },
+    // 全部阀展开
+    showall () {
+      if (this.isActive === false) {
+        this.isActive = true
+        this.icons = 'el-icon-top'
+      } else {
+        this.isActive = false
+        this.icons = 'el-icon-caret-bottom'
+      }
     }
   }
 }
@@ -232,18 +273,53 @@ export default {
 <style lang="less" scoped>
 .container {
   /deep/.el-dialog {
-    width: 650px !important;
+    width: 780px !important;
   }
   /deep/ .Valve {
     .el-dialog__body {
       width: 600px;
       height: 450px;
       margin: 0 auto;
+      .el-form {
+        width: 730px !important;
+        margin: 0 auto;
+      }
       > div {
         float: left;
         width: 72px;
         margin-right: 3px;
         margin-top: 3px;
+      }
+    }
+  }
+  /deep/ .el-checkbox-group {
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    background: transparent;
+
+    .el-checkbox-button__inner {
+      width: 75px;
+      border: 1px solid #6989a5;
+      border-radius: 5px;
+      background: transparent;
+      color: #6989a5;
+      margin-bottom: 8px;
+      padding: 0 0;
+
+      .valve_num {
+        width: 75px;
+        height: 35px;
+        line-height: 35px;
+        text-align: center;
+        background: transparent;
+      }
+    }
+    .is-checked {
+      .el-checkbox-button__inner {
+        background-color: #ccc;
+        border: 1px solid transparent;
       }
     }
   }

@@ -36,11 +36,11 @@ const router = new VueRouter({
 
 // 路由前置守卫
 
-// router.beforeEach((to, from, next) => {
-//   if (to.path === '/login') return next()
-//   const user = window.sessionStorage.getItem('token')
-//   if (user) return next()
-//   next('/login')
-// })
+router.beforeEach((to, from, next) => {
+  if (to.path === '/login') return next()
+  const user = window.sessionStorage.getItem('token')
+  if (user) return next()
+  next('/login')
+})
 
 export default router

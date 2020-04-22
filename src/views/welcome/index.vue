@@ -11,8 +11,8 @@ export default {
 }
 </script>
 
-<style>
-  .container{
-    text-align: center;
-  }
+<style lang="less">
+.container {
+  text-align: center;
+}
 </style>

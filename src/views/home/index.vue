@@ -16,28 +16,24 @@
           <span slot="title">首页</span>
         </el-menu-item>
         <el-menu-item index="/article">
-          <i class="el-icon-document"></i>
+          <i class="el-icon-user-solid"></i>
           <span slot="title">用户管理</span>
         </el-menu-item>
         <el-menu-item index="/image">
-          <i class="el-icon-picture"></i>
+          <i class="el-icon-office-building"></i>
           <span slot="title">园区管理</span>
         </el-menu-item>
-        <el-menu-item index="/publish">
-          <i class="el-icon-s-promotion"></i>
-          <span slot="title">实况管理</span>
-        </el-menu-item>
-        <el-menu-item index="/comment">
-          <i class="el-icon-chat-dot-round"></i>
-          <span slot="title">施肥机管理</span>
-        </el-menu-item>
         <el-menu-item index="/fans">
-          <i class="el-icon-present"></i>
+          <i class="el-icon-discount"></i>
           <span slot="title">温室管理</span>
         </el-menu-item>
-        <el-menu-item index="/setting">
-          <i class="el-icon-setting"></i>
-          <span slot="title">备用</span>
+        <el-menu-item index="/comment">
+          <i class="el-icon-data-analysis"></i>
+          <span slot="title">施肥机管理</span>
+        </el-menu-item>
+        <el-menu-item index="/publish">
+          <i class="el-icon-place"></i>
+          <span slot="title">实况管理</span>
         </el-menu-item>
       </el-menu>
     </el-aside>

@@ -72,7 +72,7 @@
 <script>
 export default {
   components: {},
-  data() {
+  data () {
     return {
       userList: null,
       page: 1,
@@ -81,166 +81,166 @@ export default {
       dialogFormVisible: false,
       projectFormVisible: false,
       form: {
-        name: "aa",
-        telephone: "",
-        email: "",
-        password: ""
+        name: 'aa',
+        telephone: '',
+        email: '',
+        password: ''
       },
       project: {
-        uid: "",
+        uid: '',
         pids: []
       },
       projects: [],
-      formLabelWidth: "120px"
-    };
+      formLabelWidth: '120px'
+    }
   },
 
-  created() {
-    this.list();
+  created () {
+    this.list()
   },
   methods: {
-    cancel:function(){
-      this.projectFormVisible = false;
-       this.project.uid="";
-      this.project.pids=[];
+    cancel: function () {
+      this.projectFormVisible = false
+      this.project.uid = ''
+      this.project.pids = []
     },
-    async submit2() {
+    async submit2 () {
       const {
         data: { data }
       } = await this.$http.post(
-        "http://192.168.1.254:10010/sso/api/user/bindProject",
+        'http://192.168.1.254:10010/sso/api/user/bindProject',
         this.project
-      );
-      this.projectFormVisible = false;
-      this.project.uid="";
-      this.project.pids=[];
+      )
+      this.projectFormVisible = false
+      this.project.uid = ''
+      this.project.pids = []
       if (data) {
         this.$message({
-          message: "绑定成功！",
-          type: "success"
-        });
-        this.list();
+          message: '绑定成功！',
+          type: 'success'
+        })
+        this.list()
       } else {
-        this.$message.error("绑定失败！");
+        this.$message.error('绑定失败！')
       }
     },
 
-    bindProject: function(id) {
-      this.project.uid = id;
-      this.projectFormVisible = true;
-      this.getprojects();
+    bindProject: function (id) {
+      this.project.uid = id
+      this.projectFormVisible = true
+      this.getprojects()
     },
-    async getprojects() {
+    async getprojects () {
       const {
         data: { data }
       } = await this.$http.post(
-        "http://192.168.1.254:10010/sso/api/project/queryAllByManager"
-      );
-      this.projects = data;
-      console.log(JSON.stringify(data));
+        'http://192.168.1.254:10010/sso/api/project/queryAllByManager'
+      )
+      this.projects = data
+      console.log(JSON.stringify(data))
     },
-    async submit() {
+    async submit () {
       const {
         data: { data }
       } = await this.$http.post(
-        "http://192.168.1.254:10010/sso/api/user/update",
+        'http://192.168.1.254:10010/sso/api/user/update',
         this.form
-      );
-      this.list();
-      this.dialogFormVisible = false;
+      )
+      this.list()
+      this.dialogFormVisible = false
       if (data) {
         this.$message({
-          message: "修改成功！",
-          type: "success"
-        });
-        this.list();
+          message: '修改成功！',
+          type: 'success'
+        })
+        this.list()
       } else {
-        this.$message.error("修改失败！");
+        this.$message.error('修改失败！')
       }
     },
-    editUser: function(item) {
-      item.password = "";
-      this.form = item;
-      console.log(JSON.stringify(item));
-      this.dialogFormVisible = true;
+    editUser: function (item) {
+      item.password = ''
+      this.form = item
+      console.log(JSON.stringify(item))
+      this.dialogFormVisible = true
     },
-    currentchange(page) {
-      this.page = page;
-      this.list();
+    currentchange (page) {
+      this.page = page
+      this.list()
     },
-    prevpage() {
-      this.page = this.page - 1;
-      this.list();
+    prevpage () {
+      this.page = this.page - 1
+      this.list()
     },
-    nextpage() {
-      this.page = this.page + 1;
-      this.list();
+    nextpage () {
+      this.page = this.page + 1
+      this.list()
     },
     // 获取列表
-    async list() {
+    async list () {
       const {
         data: { data }
       } = await this.$http.post(
-        "http://192.168.1.254:10010/sso/api/user/list",
+        'http://192.168.1.254:10010/sso/api/user/list',
         { page: this.page, pageSize: this.pageSize, user: {} }
-      );
-      this.userList = data.data;
-      this.total = data.total;
-      console.log(JSON.stringify(data));
+      )
+      this.userList = data.data
+      this.total = data.total
+      // console.log(JSON.stringify(data))
     },
-    async updateUser(id) {
+    async updateUser (id) {
       const {
         data: { data }
       } = await this.$http.post(
-        "http://192.168.1.254:10010/sso/api/user/deleteUser",
+        'http://192.168.1.254:10010/sso/api/user/deleteUser',
         { id: id }
-      );
+      )
       if (data) {
         this.$message({
-          message: "删除成功！",
-          type: "success"
-        });
-        this.list();
+          message: '删除成功！',
+          type: 'success'
+        })
+        this.list()
       } else {
-        this.$message.error("删除失败！");
+        this.$message.error('删除失败！')
       }
 
-      console.log(JSON.stringify(data));
+      console.log(JSON.stringify(data))
     },
-    async deleteUser(id) {
+    async deleteUser (id) {
       const {
         data: { data }
       } = await this.$http.post(
-        "http://192.168.1.254:10010/sso/api/user/deleteUser",
+        'http://192.168.1.254:10010/sso/api/user/deleteUser',
         { id: id }
-      );
+      )
       if (data) {
         this.$message({
-          message: "删除成功！",
-          type: "success"
-        });
-        this.list();
+          message: '删除成功！',
+          type: 'success'
+        })
+        this.list()
       } else {
-        this.$message.error("删除失败！");
+        this.$message.error('删除失败！')
       }
 
-      console.log(JSON.stringify(data));
+      console.log(JSON.stringify(data))
     },
     // 编辑
-    edit(id) {},
+    edit (id) {},
     // 删除
-    del(id) {},
+    del (id) {},
     // 分页
-    pager(newPage) {
+    pager (newPage) {
       // 提交当前页码给后台才能获取对应的数据
-      this.reqParams.page = newPage;
+      this.reqParams.page = newPage
     },
     // 获取数据
-    async getArticles() {
-      console.log("hahahahaha");
+    async getArticles () {
+      console.log('hahahahaha')
     }
   }
-};
+}
 </script>
 
 <style lang="less" scoped>
