@@ -15,26 +15,45 @@
           <i class="el-icon-s-home"></i>
           <span slot="title">首页</span>
         </el-menu-item>
-        <el-menu-item index="/article">
+        <!-- <el-menu-item index="/article">
           <i class="el-icon-user-solid"></i>
           <span slot="title">用户管理</span>
-        </el-menu-item>
+        </el-menu-item> -->
         <el-menu-item index="/image">
           <i class="el-icon-office-building"></i>
           <span slot="title">园区管理</span>
+        </el-menu-item>
+        <el-menu-item index="/comment">
+          <i class="el-icon-data-board"></i>
+          <span slot="title">施肥机管理</span>
+        </el-menu-item>
+        <el-menu-item index="/passageway">
+          <i class="el-icon-c-scale-to-original"></i>
+          <span slot="title">通道管理</span>
         </el-menu-item>
         <el-menu-item index="/fans">
           <i class="el-icon-discount"></i>
           <span slot="title">温室管理</span>
         </el-menu-item>
-        <el-menu-item index="/comment">
-          <i class="el-icon-data-analysis"></i>
-          <span slot="title">施肥机管理</span>
-        </el-menu-item>
         <el-menu-item index="/publish">
           <i class="el-icon-place"></i>
           <span slot="title">实况管理</span>
         </el-menu-item>
+        <el-submenu index="1">
+          <template slot="title">
+            <i class="el-icon-cpu"></i>
+            <span>系统设置</span>
+          </template>
+          <el-menu-item index="/gateway" style="padding-left: 70px;">
+            <span slot="title">采集器</span>
+          </el-menu-item>
+          <el-menu-item index="/sensor" style="padding-left: 70px;">
+            <span slot="title">传感器</span>
+          </el-menu-item>
+          <el-menu-item index="/sensortype" style="padding-left: 70px;">
+            <span slot="title">传感器类别</span>
+          </el-menu-item>
+        </el-submenu>
       </el-menu>
     </el-aside>
     <el-container>

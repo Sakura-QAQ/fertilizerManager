@@ -11,6 +11,10 @@ import Publish from '@/views/publish'
 import Comment from '@/views/comment'
 import Setting from '@/views/setting'
 import Fans from '@/views/fans'
+import PassageWay from '@/views/passageway'
+import Gateway from '@/views/gateway'
+import Sensor from '@/views/sensor'
+import SensorType from '@/views/sensortype'
 
 Vue.use(VueRouter)
 
@@ -27,7 +31,11 @@ const router = new VueRouter({
         { name: 'publish', path: '/publish', component: Publish },
         { name: 'comment', path: '/comment', component: Comment },
         { name: 'setting', path: '/setting', component: Setting },
-        { name: 'fans', path: '/fans', component: Fans }
+        { name: 'fans', path: '/fans', component: Fans },
+        { name: 'passageway', path: '/passageway', component: PassageWay },
+        { name: 'gateway', path: '/gateway', component: Gateway },
+        { name: 'sensor', path: '/sensor', component: Sensor },
+        { name: 'sensortype', path: '/sensortype', component: SensorType }
       ]
     },
     { name: '404', path: '*', component: NotFound }

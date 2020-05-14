@@ -63,7 +63,7 @@ export default {
               // 存数据
               window.sessionStorage.setItem('token', JSON.stringify(res.data.data))
               // 跳路由
-              this.$router.push('/')
+              this.$router.push('/image')
             }
           } catch (err) {
             this.$message.error('Error')

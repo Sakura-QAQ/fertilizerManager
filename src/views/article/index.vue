@@ -5,7 +5,6 @@
       <div slot="header">
         <my-bread>用户管理</my-bread>
       </div>
-
       <el-table :data="userList">
         <el-table-column label="用户名" prop="name"></el-table-column>
         <el-table-column label="手机号" prop="telephone"></el-table-column>
@@ -137,7 +136,6 @@ export default {
         'http://192.168.1.254:10010/sso/api/project/queryAllByManager'
       )
       this.projects = data
-      console.log(JSON.stringify(data))
     },
     async submit () {
       const {
@@ -161,7 +159,6 @@ export default {
     editUser: function (item) {
       item.password = ''
       this.form = item
-      console.log(JSON.stringify(item))
       this.dialogFormVisible = true
     },
     currentchange (page) {
@@ -186,7 +183,6 @@ export default {
       )
       this.userList = data.data
       this.total = data.total
-      // console.log(JSON.stringify(data))
     },
     async updateUser (id) {
       const {
@@ -204,8 +200,6 @@ export default {
       } else {
         this.$message.error('删除失败！')
       }
-
-      console.log(JSON.stringify(data))
     },
     async deleteUser (id) {
       const {
@@ -223,8 +217,6 @@ export default {
       } else {
         this.$message.error('删除失败！')
       }
-
-      console.log(JSON.stringify(data))
     },
     // 编辑
     edit (id) {},
@@ -234,10 +226,6 @@ export default {
     pager (newPage) {
       // 提交当前页码给后台才能获取对应的数据
       this.reqParams.page = newPage
-    },
-    // 获取数据
-    async getArticles () {
-      console.log('hahahahaha')
     }
   }
 }

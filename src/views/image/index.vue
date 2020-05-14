@@ -6,7 +6,7 @@
         <el-form align="right">
           <el-button type="primary" @click="add">添加园区</el-button>
         </el-form>
-        <el-dialog :visible.sync="dialogFlag">
+        <el-dialog :visible.sync="dialogFlag" :close-on-click-modal="false">
           <el-form :model="addList">
             <el-form-item label="项目名称：">
               <el-input v-model="addList.name"></el-input>
@@ -40,7 +40,7 @@
       </div>
     </el-card>
     <el-card>
-      <el-table :data="proList">
+      <el-table :data="proList.slice((pageNum - 1)*pageSize, pageNum*pageSize)">
         <el-table-column label="园区名" prop="name"></el-table-column>
         <el-table-column label="园区描述" prop="descr">
         </el-table-column>
@@ -51,6 +51,18 @@
           </template>
         </el-table-column>
       </el-table>
+      <div class="box" style="text-align: center;">
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          @current-change="currentchange"
+          @next-click="nextpage"
+          @prev-click="prevpage"
+          :current-page="pageNum"
+          :page-size="pageSize"
+          :total="total"
+        ></el-pagination>
+      </div>
     </el-card>
   </div>
 </template>
@@ -59,6 +71,10 @@
 export default {
   data () {
     return {
+      // 分页参数
+      pageNum: 1,
+      pageSize: 10,
+      total: 0,
       // 园区列表
       proList: [],
       // 添加
@@ -86,6 +102,7 @@ export default {
     async getproject () {
       const { data: { data } } = await this.$http.post('http://192.168.1.254:10010/sso/api/project/queryAllByUser')
       this.proList = data
+      this.total = data.length
     },
     add () {
       this.dialogFlag = true
@@ -117,7 +134,6 @@ export default {
     },
     // 编辑项目
     async editproject (index, row) {
-      console.log(row)
       this.dialogFlag = true
       this.addList.id = row.id
       this.addList.name = row.name
@@ -141,6 +157,9 @@ export default {
           )
           // 删除成功
           this.$message.success('删除成功')
+          const totalPage = Math.ceil((this.total - 1) / this.pageSize)
+          const pageNum = this.pageNum > totalPage ? totalPage : this.pageNum
+          this.pageNum = pageNum < 1 ? 1 : pageNum
           this.getproject()
         })
         .catch(() => {})
@@ -159,6 +178,17 @@ export default {
     },
     handleBannerSuccess (response) {
       this.addList.situationUrl = response.data
+      // this.$refs.upload.uploadFiles = []
+    },
+    // 分页
+    currentchange (newPage) {
+      this.pageNum = newPage
+    },
+    prevpage () {
+      this.pageNum = this.pageNum - 1
+    },
+    nextpage () {
+      this.pageNum = this.pageNum + 1
     }
   }
 }

@@ -31,7 +31,7 @@ instance.interceptors.request.use(config => {
 // 响应拦截
 instance.interceptors.response.use(response => {
   // Loading.service().close()
-  if (response.data.code === 200) {
+  if (response.data.code === 200 || response.data.code === 100) {
     // 为200则返回响应结果
     return response
     // 自定义100+代码做的事情

@@ -61,7 +61,9 @@
         @dragging="dragValve($event, valve)"
         @dragstop="out"
         >
-        <el-button :class="[valve.onCheck === 0?'valve':'isActived']" type="warning" icon="el-icon-set-up" circle></el-button>
+        <el-button :class="[valve.onCheck === 0?'valve':'isActived']" type="warning" circle>
+          <i class="dcf-icon"></i>
+        </el-button>
       </vue-drag-resize>
       <div class="hover_con" v-show="seen" :style="positionStyle">
         <div class="dcfTip">阀名称:{{VavlesName}}</div>
@@ -262,7 +264,7 @@ export default {
         }
         a.push(objval)
       }
-      const { data: { code } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/situation', a)
+      const { data: { code } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/situation/addSituation', a)
       if (code === 200) {
         this.$message.success('提交成功')
       }
@@ -320,8 +322,22 @@ export default {
         }
       }
     },
-    reset () {
-      this.getferlist()
+    // 重置
+    async reset () {
+      const Id = {
+        id: this.proID.projectId
+      }
+      this.$confirm('确定重置?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(async () => {
+          await this.$http.post('http://192.168.1.254:10020/fertilizer/api/situation/situationReset', Id)
+          this.$message.success('重置成功')
+          this.getferlist()
+        })
+        .catch(() => {})
     }
   }
 }
@@ -355,14 +371,20 @@ export default {
             float: left;
             width: 60px;
             height: 60px;
-            background: url('../../assets/icon/sfj-icon.png') no-repeat;
+            background: url('../../assets/icon/sfj-icon2.png') no-repeat 5px 5px;
             background-size: 60px 60px;
           }
           .showData {
             float: left;
             .ferzName {
+              width: 86px;
+              width: 75px;
               color: #ccc;
               font-weight: 800;
+              text-align: center;
+              overflow:hidden;
+              text-overflow:ellipsis;
+              white-space:nowrap;
             }
             .status {
               height: 39px;
@@ -405,6 +427,17 @@ export default {
           border: 1px solid #000;
           text-align: left;
           color: #fff;
+        }
+        // 电磁阀标
+        .valve {
+          padding: 6px;
+        }
+        .dcf-icon {
+          display: block;
+          width: 28px;
+          height: 28px;
+          background: url('../../assets/icon/dcf-icon.png')no-repeat;
+          background-size: 28px 28px;
         }
         // 阀点击样式
         .isActived {

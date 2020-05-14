@@ -21,7 +21,7 @@
           </el-form>
         </el-card>
         <!-- 对话层 -->
-        <el-dialog style="margin-top:20px;" :visible.sync="dialogFormVisible">
+        <el-dialog style="margin-top:20px;" :visible.sync="dialogFormVisible" :close-on-click-modal="false">
           <el-form :model="addFerList"  label-width="120px">
             <el-form-item label="产品编号：">
               <el-input v-model="addFerList.prodCode"></el-input>
@@ -38,7 +38,7 @@
             <el-form-item label="阀类型：">
               <el-radio-group v-model="addFerList.valveType">
                 <el-radio :label="0">有线阀</el-radio>
-                <el-radio :label="1">天正阀</el-radio>
+                <el-radio :label="1">无线阀</el-radio>
               </el-radio-group>
             </el-form-item>
             <el-form-item label="版本号：">
@@ -63,7 +63,7 @@
       </div>
     </el-card>
     <el-card>
-      <el-table :data="FerList">
+      <el-table :data="FerList.slice((pageNum - 1)*pageSize, pageNum*pageSize)">
         <el-table-column label="施肥机名称" prop="name"></el-table-column>
         <el-table-column label="施肥机描述" prop="descr">
         </el-table-column>
@@ -91,6 +91,18 @@
           <el-button type="primary" @click="submitValvesName()">确 定</el-button>
         </div>
       </el-dialog>
+      <div class="box">
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          @current-change="currentchange"
+          @next-click="nextpage"
+          @prev-click="prevpage"
+          :current-page="pageNum"
+          :page-size="pageSize"
+          :total="total"
+        ></el-pagination>
+      </div>
     </el-card>
   </div>
 </template>
@@ -100,12 +112,8 @@ export default {
   data () {
     return {
       // 分页参数
-      reqParams: {
-        page: 1,
-        per_page: 20,
-        response_type: 'comment'
-      },
-      // 总条数
+      pageNum: 1,
+      pageSize: 8,
       total: 0,
       // 项目id
       proID: {
@@ -147,19 +155,14 @@ export default {
     }
   },
   mounted () {
-    this.order()
+    this.getproject().then(res => {
+      this.getFerList()
+    })
   },
   methods: {
-    // 顺序
-    order () {
-      this.getproject().then(res => {
-        this.getFerList()
-      })
-    },
     // 园区切换
     async proTab () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryByProjectId', this.proID)
-      this.FerList = data
+      this.getFerList()
     },
     // 获取列表
     async getproject () {
@@ -171,32 +174,36 @@ export default {
     async getFerList () {
       const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryByProjectId', this.proID)
       this.FerList = data
+      this.total = data.length
     },
     // 添加施肥机
     add () {
       this.dialogFormVisible = true
       this.clear()
     },
-    // 提交施肥机表单
-    async submitFerForm () {
-      this.addFerList.projectId = this.proID.projectId
-      this.addFerList.valveNum = this.checkboxGroup.join(',')
-      await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/saveOrUpdate', this.addFerList)
-      this.dialogFormVisible = false
-      this.getFerList().then(res => {
-        this.clear()
-      })
-    },
     // 删除
     async del (index, row) {
       const ID = {
         id: row.id
       }
-      await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/delete', ID)
-      this.getFerList()
+      this.$confirm('此操作将永久删除该温室, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(async () => {
+          await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/delete', ID)
+          this.$message.success('删除成功')
+          const totalPage = Math.ceil((this.total - 1) / this.pageSize)
+          const pageNum = this.pageNum > totalPage ? totalPage : this.pageNum
+          this.pageNum = pageNum < 1 ? 1 : pageNum
+          this.getFerList()
+        })
+        .catch(() => {})
     },
     // 编辑施肥机
-    async editFerList (index, row) {
+    editFerList (index, row) {
+      console.log(row)
       this.dialogFormVisible = true
       this.checkboxGroup = row.valveNum.split(',').map(Number)
       this.addFerList = {
@@ -207,7 +214,8 @@ export default {
         descr: row.descr,
         dtuCode: row.dtuCode,
         valveType: row.valveType,
-        version: row.version
+        version: row.version,
+        channels: row.channels
       }
     },
     // 恢复默认 (直接调用)
@@ -239,14 +247,34 @@ export default {
       const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryValveAlias', ferId)
       this.ValveName = data.split(',')
     },
+    // 提交施肥机表单
+    async submitFerForm () {
+      this.addFerList.projectId = this.proID.projectId
+      this.addFerList.valveNum = this.checkboxGroup.join(',')
+      const { data } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/saveOrUpdate', this.addFerList)
+      if (data.code === 200) {
+        this.$message.success('提交成功')
+        this.dialogFormVisible = false
+        this.getFerList().then(res => {
+          this.clear()
+        })
+      } else {
+        this.$message.error(data.msg)
+      }
+    },
     // 提交阀名
     async submitValvesName () {
       const obj = {
         id: this.ferValveId,
         valveAlias: this.ValveName.join(',')
       }
-      await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/updateValveAlias', obj)
-      this.dialogValve = false
+      const { data } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/updateValveAlias', obj)
+      if (data.code === 200) {
+        this.$message.success('提交成功')
+        this.dialogValve = false
+      } else {
+        this.$message.error(data.msg)
+      }
     },
     // 阀索引函数条件
     cut (index) {
@@ -265,6 +293,16 @@ export default {
         this.isActive = false
         this.icons = 'el-icon-caret-bottom'
       }
+    },
+    // 分页
+    currentchange (newPage) {
+      this.pageNum = newPage
+    },
+    prevpage () {
+      this.pageNum = this.pageNum - 1
+    },
+    nextpage () {
+      this.pageNum = this.pageNum + 1
     }
   }
 }

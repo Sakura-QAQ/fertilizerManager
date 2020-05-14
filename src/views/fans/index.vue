@@ -23,7 +23,7 @@
       </div>
     </el-card>
     <el-card>
-      <el-table :data="areaList">
+      <el-table :data="areaList.slice((pageNum - 1)*pageSize, pageNum*pageSize)">
         <el-table-column label="温室名称" prop="name"></el-table-column>
         <el-table-column label="绑定的施肥机" prop="ferName"></el-table-column>
         <el-table-column label="绑定的阀" prop="fergroup">
@@ -47,7 +47,19 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-dialog class="Valve" :visible.sync="dialogFlag">
+      <div class="box">
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          @current-change="currentchange"
+          @next-click="nextpage"
+          @prev-click="prevpage"
+          :current-page="pageNum"
+          :page-size="pageSize"
+          :total="total"
+        ></el-pagination>
+      </div>
+      <el-dialog class="Valve" :visible.sync="dialogFlag" :close-on-click-modal="false">
         <el-form :model="addAreaList" label-width="120px" style="width:630px;margin: 0 auto;">
           <el-form-item label="温室名称：">
             <el-input v-model="addAreaList.name"></el-input>
@@ -58,7 +70,7 @@
             </el-select>
           </el-form-item>
           <el-form-item label="绑定电磁阀：">
-            <el-checkbox-group v-model="checkboxGroup">
+            <el-checkbox-group v-model="checkboxGroup" @change="checkbox">
               <template v-for="(item, index) in Vals">
                 <el-checkbox-button :label="index + 1" :key="index">
                   <div class="valve_num">{{item}}</div>
@@ -80,6 +92,10 @@
 export default {
   data () {
     return {
+      // 分页参数
+      pageNum: 1,
+      pageSize: 8,
+      total: 0,
       // 项目id
       proID: {
         projectId: ''
@@ -100,32 +116,53 @@ export default {
       },
       // 编辑层
       dialogFlag: false,
-      // 选中的阀
+      // 选中的阀索引
       checkboxGroup: [],
-      // 页面进入渲染使用的阀
-      useVals: [],
+      // 选中的阀名
+      checkvalve: [],
       // 阀列表
-      Vals: ['1#', '2#', '3#', '4#', '5#', '6#', '7#', '8#', '9#', '10#', '11#', '12#', '13#', '14#', '15#', '16#', '17#', '18#', '19#', '20#', '21#', '22#', '23#', '24#', '25#', '26#', '27#', '28#', '29#', '30#', '31#', '32#', '33#', '34#', '35#', '36#', '37#', '38#', '39#', '40#', '41#', '42#', '43#', '44#', '45#', '46#', '47#', '48#', '49#', '50#', '51#', '52#', '53#', '54#', '55#', '56#', '57#', '58#', '59#', '60#', '61#', '62#', '63#', '64#']
+      Vals: [],
+      // 阀名称
+      AllValsName: [],
+      ferindex: []
     }
   },
   mounted () {
-    this.order()
+    this.getproject().then(res => {
+      this.getFerList().then(res => {
+        this.getAreaList()
+      })
+    })
   },
   methods: {
-    order () {
-      this.getproject().then(res => {
-        this.getFerList().then(res => {
-          this.getAreaList()
-        })
-      })
+    // 分页
+    currentchange (newPage) {
+      this.pageNum = newPage
+    },
+    prevpage () {
+      this.pageNum = this.pageNum - 1
+    },
+    nextpage () {
+      this.pageNum = this.pageNum + 1
     },
     // dialog层施肥机切换
     async TabFer () {
+      this.checkboxGroup = []
       const ID = {
         id: this.addAreaList.fertilizerId
       }
       const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryValveAlias', ID)
-      this.Vals = data.split(',')
+      const res = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryById', ID)
+      const valnum = res.data.data.valveNum.split(',').map(Number)
+      const vals = data.split(',')
+      this.Vals = vals.filter((_, index) => valnum.includes(index + 1))
+      this.AllValsName = vals
+    },
+    // checkbox
+    checkbox () {
+      let a = this.checkboxGroup
+      let b = this.Vals
+      this.checkvalve = b.filter((_, index) => a.includes(index + 1))
     },
     // 获取园区
     async getproject () {
@@ -168,6 +205,7 @@ export default {
           }
         }
       }
+      this.total = arealist.length
       this.areaList = arealist
     },
     // 获取施肥机列表
@@ -181,16 +219,24 @@ export default {
       this.FerList = data
     },
     // 添加
-    add () {
+    async add () {
       this.clear()
       this.dialogFlag = true
       this.addAreaList.projectId = this.proID.projectId
+      this.addAreaList.fertilizerId = this.FerList[0].id
+      const ID = {
+        id: this.addAreaList.fertilizerId
+      }
+      const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryValveAlias', ID)
+      const valnum = this.FerList[0].valveNum.split(',').map(Number)
+      const vals = data.split(',')
+      this.Vals = vals.filter((_, index) => valnum.includes(index + 1))
+      this.AllValsName = vals
       this.getAreaList()
     },
     // 编辑
-    async edit (ndex, row) {
+    async edit (index, row) {
       this.dialogFlag = true
-      this.checkboxGroup = row.fertilizerValves.split(',').map(Number)
       this.addAreaList = {
         id: row.id,
         name: row.name,
@@ -202,7 +248,26 @@ export default {
         id: row.fertilizerId
       }
       const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryValveAlias', ID)
-      this.Vals = data.split(',')
+      const res = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryById', ID)
+      const valnum = res.data.data.valveNum.split(',').map(Number).sort()
+      const groupIndex = []
+      const a = row.fertilizerValves.split(',').map(Number)
+      const getindex = (arr, item) => {
+        for (let i = 0; i < valnum.length; i++) {
+          if (arr[i] === item) {
+            return i + 1
+          }
+        }
+      }
+      for (let j = 0; j < a.length; j++) {
+        const element = a[j]
+        groupIndex.push(getindex(valnum, element))
+      }
+      this.AllValsName = data.split(',')
+      this.checkvalve = row.fergroup.split(',')
+      this.checkboxGroup = groupIndex
+      const vals = data.split(',')
+      this.Vals = vals.filter((_, index) => valnum.includes(index + 1))
     },
     // 删除
     async del (index, row) {
@@ -220,6 +285,9 @@ export default {
             ID
           )
           this.$message.success('删除成功')
+          const totalPage = Math.ceil((this.total - 1) / this.pageSize)
+          const pageNum = this.pageNum > totalPage ? totalPage : this.pageNum
+          this.pageNum = pageNum < 1 ? 1 : pageNum
           this.getAreaList()
         })
         .catch(() => {})
@@ -233,11 +301,26 @@ export default {
         fertilizerValves: ''
       }
       this.checkboxGroup = []
-      this.Vals = ['1#', '2#', '3#', '4#', '5#', '6#', '7#', '8#', '9#', '10#', '11#', '12#', '13#', '14#', '15#', '16#', '17#', '18#', '19#', '20#', '21#', '22#', '23#', '24#', '25#', '26#', '27#', '28#', '29#', '30#', '31#', '32#', '33#', '34#', '35#', '36#', '37#', '38#', '39#', '40#', '41#', '42#', '43#', '44#', '45#', '46#', '47#', '48#', '49#', '50#', '51#', '52#', '53#', '54#', '55#', '56#', '57#', '58#', '59#', '60#', '61#', '62#', '63#', '64#']
+      this.Vals = []
+      this.ferindex = []
+      this.fergroup = []
+      this.checkvalve = ''
     },
     // 提交园区表单
     async submitAreaList () {
-      this.addAreaList.fertilizerValves = this.checkboxGroup.join(',')
+      this.ferindex = []
+      const getindex = (arr, item) => {
+        for (let i = 0; i < this.AllValsName.length; i++) {
+          if (arr[i] === item) {
+            return i + 1
+          }
+        }
+      }
+      for (let j = 0; j < this.checkvalve.length; j++) {
+        const element = this.checkvalve[j]
+        this.ferindex.push(getindex(this.AllValsName, element))
+      }
+      this.addAreaList.fertilizerValves = this.ferindex.join(',')
       const res = await this.$http.post(
         'http://192.168.1.254:10020/fertilizer/api/area/saveOrUpdate',
         this.addAreaList
@@ -246,6 +329,7 @@ export default {
         this.$message.success('提交成功')
       }
       this.dialogFlag = false
+      this.ferindex = []
       this.getAreaList()
     }
   }
