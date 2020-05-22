@@ -6,8 +6,8 @@ module.exports = {
 // publicPath: process.env.NODE_ENV === 'production' ?
 //   '/production-sub-path/' :
 //   '/'
-/* 根据后端服务器需求使用 (vuecli3有默认配置)
-const path = require('path')
+// 根据后端服务器需求使用(vuecli3有默认配置)
+/* const path = require('path')
 
 module.exports = {
   publicPath: '/', // 公共路径
@@ -40,5 +40,4 @@ module.exports = {
       }
     }
   }
-}
-*/
+} */
