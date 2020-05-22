@@ -83,7 +83,7 @@ export default {
     },
     // 园区选择
     async getproject () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10010/sso/api/project/queryAllByUser')
+      const { data: { data } } = await this.$login.post('sso/api/project/queryAllByUser')
       this.proList = data
       this.proID.projectId = data[0].id
     },
@@ -93,7 +93,7 @@ export default {
     },
     // 默认展示的施肥机数据
     async getferlist () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryByProjectId', this.proID)
+      const { data: { data } } = await this.$http.post('fertilizer/api/fertilizer/queryByProjectId', this.proID)
       if (data.length === 0) {
         this.$message.error('没有施肥机！请去添加！')
         this.FerId = {}
@@ -107,7 +107,7 @@ export default {
     },
     // 施肥机查询
     async querybyferid () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryById', this.FerId)
+      const { data: { data } } = await this.$http.post('fertilizer/api/fertilizer/queryById', this.FerId)
       if (data === null) {
         return false
       }
@@ -130,7 +130,7 @@ export default {
         this.$message.error('提交参数不能为空')
         return false
       } else {
-        const { data } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/updateFertilizerChannels', channel)
+        const { data } = await this.$http.post('fertilizer/api/fertilizer/updateFertilizerChannels', channel)
         if (data.code === 200) {
           this.$message.success('提交成功')
           this.querybyferid()

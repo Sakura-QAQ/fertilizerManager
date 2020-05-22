@@ -160,13 +160,13 @@ export default {
     },
     // 园区选择
     async getproject () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10010/sso/api/project/queryAllByUser')
+      const { data: { data } } = await this.$login.post('sso/api/project/queryAllByUser')
       this.proList = data
       this.proID.projectId = data[0].id
     },
     // 通过园区id获取采集器
     async getgatelist () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10040/sensor/api/gateway/queryByProject', this.proID)
+      const { data: { data } } = await this.$sensor.post('sensor/api/gateway/queryByProject', this.proID)
       this.total = data.length
       if (data.length === 0) {
         this.$message.warning('没有采集器，请去添加')
@@ -180,13 +180,13 @@ export default {
     },
     // 传感器类别选项
     async getsensortype () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10040/sensor/api/type/queryAll')
+      const { data: { data } } = await this.$sensor.post('sensor/api/type/queryAll')
       this.typeList = data
       this.typeId.id = data[0].id
     },
     // 通过采集器id获取传感器
     async queryByGateway () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10040/sensor/api/sensor/queryByGateway', this.gateID)
+      const { data: { data } } = await this.$sensor.post('sensor/api/sensor/queryByGateway', this.gateID)
       for (let i = 0; i < data.length; i++) {
         const element = data[i]
         for (let j = 0; j < this.typeList.length; j++) {
@@ -232,8 +232,8 @@ export default {
         type: 'warning'
       })
         .then(async () => {
-          await this.$http.post(
-            'http://192.168.1.254:10040/sensor/api/sensor/delete',
+          await this.$sensor.post(
+            'sensor/api/sensor/delete',
             ID
           )
           this.$message.success('删除成功')
@@ -255,7 +255,7 @@ export default {
         // 节点位置(通道位置)
         nodeNumber: Number(this.addSensorList.nodeNumber)
       }
-      const { data: { code } } = await this.$http.post('http://192.168.1.254:10040/sensor/api/sensor/saveOrUpdate', SensorList)
+      const { data: { code } } = await this.$sensor.post('sensor/api/sensor/saveOrUpdate', SensorList)
       if (code === 200) {
         this.$message.success('提交成功')
         this.dialogFlag = false

@@ -23,7 +23,10 @@
             <el-form-item label="采集器名称：">
               <el-input v-model="addGateList.name"></el-input>
             </el-form-item>
-            <el-form-item label="采集器坐标：">
+            <el-form-item label="注册包：">
+              <el-input v-model="addGateList.dtuCode"></el-input>
+            </el-form-item>
+            <el-form-item label="采集器位置：">
               <el-input v-model="addGateList.position"></el-input>
             </el-form-item>
             <el-form-item label="采集器类型：">
@@ -42,12 +45,12 @@
     </el-card>
     <el-card>
       <el-table :data="gateList.slice((pageNum - 1)*pageSize, pageNum*pageSize)">
-        <el-table-column label="名称" prop="name"></el-table-column>
-        <el-table-column label="状态" prop="status"></el-table-column>
+        <el-table-column label="采集器名称" prop="name"></el-table-column>
+        <el-table-column label="状态" prop="statusName"></el-table-column>
         <el-table-column label="注册包" prop="dtuCode"></el-table-column>
-        <el-table-column label="位置" prop="position">
+        <el-table-column label="采集器位置" prop="position">
         </el-table-column>
-        <el-table-column label="类型" prop="type">
+        <el-table-column label="采集器类型" prop="typeName">
         </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
@@ -104,7 +107,8 @@ export default {
         name: '',
         projectId: '',
         position: '',
-        type: 1
+        type: 1,
+        dtuCode: ''
       },
       dialogFlag: false,
       proList: [],
@@ -133,13 +137,26 @@ export default {
     },
     // 园区选择
     async getproject () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10010/sso/api/project/queryAllByUser')
+      const { data: { data } } = await this.$login.post('sso/api/project/queryAllByUser')
       this.proList = data
       this.proID.projectId = data[0].id
     },
     // 通过园区id获取网关
     async getgateway () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10040/sensor/api/gateway/queryByProject', this.proID)
+      const { data: { data } } = await this.$sensor.post('sensor/api/gateway/queryByProject', this.proID)
+      for (let i = 0; i < data.length; i++) {
+        const element = data[i]
+        if (element.status === 0) {
+          element.statusName = '不在线'
+        } else {
+          element.statusName = '在线'
+        }
+        if (element.type === 1) {
+          element.typeName = '土壤墒情'
+        } else {
+          element.typeName = '气象站'
+        }
+      }
       this.gateList = data
       this.total = data.length
     },
@@ -151,7 +168,7 @@ export default {
     // 提交网关
     async submitGateList () {
       this.addGateList.projectId = this.proID.projectId
-      const { data } = await this.$http.post('http://192.168.1.254:10040/sensor/api/gateway/saveOrUpdate', this.addGateList)
+      const { data } = await this.$sensor.post('sensor/api/gateway/saveOrUpdate', this.addGateList)
       if (data.code === 200) {
         this.dialogFlag = false
         this.$message.success('提交成功')
@@ -166,7 +183,8 @@ export default {
         name: row.name,
         projectId: row.projectId,
         position: row.position,
-        type: row.type
+        type: row.type,
+        dtuCode: row.dtuCode
       }
     },
     // 删除
@@ -180,8 +198,8 @@ export default {
         type: 'warning'
       })
         .then(async () => {
-          await this.$http.post(
-            'http://192.168.1.254:10040/sensor/api/gateway/delete',
+          await this.$sensor.post(
+            'sensor/api/gateway/delete',
             ID
           )
           this.$message.success('删除成功')

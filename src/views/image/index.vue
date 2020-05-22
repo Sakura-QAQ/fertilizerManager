@@ -19,7 +19,7 @@
                 class="upload-demo"
                 name="avatarfile"
                 ref="upload"
-                action="http://192.168.1.254:10010/sso/api/project/updateAvatar"
+                action="http://47.104.128.108:10010/sso/api/project/updateAvatar"
                 :headers="TokenBus"
                 :on-preview="handlePreview"
                 :on-remove="handleRemove"
@@ -44,13 +44,69 @@
         <el-table-column label="园区名" prop="name"></el-table-column>
         <el-table-column label="园区描述" prop="descr">
         </el-table-column>
-        <el-table-column label="操作" width="120">
+        <el-table-column label="操作">
           <template slot-scope="scope">
             <el-button icon="el-icon-edit" circle plain type="primary" @click="editproject(scope.$index, scope.row)"></el-button>
             <el-button icon="el-icon-delete" circle plain type="danger" @click="del(scope.$index, scope.row)" ></el-button>
           </template>
         </el-table-column>
+        <el-table-column label="管理用户">
+          <template slot-scope="scope">
+            <el-button icon="el-icon-user-solid" plain type="primary" @click="queryUser(scope.$index, scope.row)">关联用户</el-button>
+            <!-- <el-button icon="el-icon-user-solid" plain type="primary" @click="addUser(scope.$index, scope.row)">用户添加</el-button> -->
+          </template>
+        </el-table-column>
       </el-table>
+      <!-- 用户查询 -->
+      <el-dialog class="userList" :visible.sync="dialogUser" :close-on-click-modal="false">
+        <div class="addUserBtn">
+          <el-popover
+            placement="right"
+            width="400"
+            trigger="click">
+            <el-input style="width:80%;" placeholder="输入要添加的用户名/手机号/邮箱" v-model="userOrTel"></el-input>
+            <el-button style="margin:0 0 0 10px;" type="primary" @click="define">确定</el-button>
+            <el-button slot="reference" icon="el-icon-user" type="primary" plain>添加用户</el-button>
+          </el-popover>
+        </div>
+        <el-table
+          class="userTable"
+          :data="userPlan"
+          style="width: 100%">
+          <el-table-column
+            prop="name"
+            label="用户账号">
+          </el-table-column>
+          <el-table-column label="操作">
+            <template slot-scope="scope">
+              <!-- <el-button plain type="primary"></el-button> -->
+              <el-button plain type="danger" @click="delUser(scope.$index, scope.row)">解绑</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogUser = false">取 消</el-button>
+        </div>
+      </el-dialog>
+      <!-- 用户添加 -->
+      <el-dialog :visible.sync="dialogUserAdd" :close-on-click-modal="false">
+        <el-table
+          :data="personList"
+          style="width: 100%">
+          <el-table-column
+            prop="user.name"
+            label="用户账号">
+          </el-table-column>
+          <el-table-column label="操作">
+            <template slot-scope="scope">
+              <el-button plain type="primary" @click="sendUserData(scope.$index, scope.row)">添加</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="dialogUserAdd = false">取 消</el-button>
+        </div>
+      </el-dialog>
       <div class="box" style="text-align: center;">
         <el-pagination
           background
@@ -85,11 +141,20 @@ export default {
         situationUrl: ''
       },
       dialogFlag: false,
+      dialogUser: false,
+      dialogUserAdd: false,
       fileList: [],
       TokenBus: {
         token: ''
       },
-      imgUrl: 'http://192.168.1.254:10010/image/avatar/'
+      imgUrl: 'http://47.104.128.108:10010/image/avatar/',
+      userPlan: [],
+      projectId: '',
+      // 员工列表
+      personList: [],
+      // 添加的用户名或手机号
+      userOrTel: '',
+      visible: false
     }
   },
   created () {
@@ -100,7 +165,7 @@ export default {
   methods: {
     // 获取列表
     async getproject () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10010/sso/api/project/queryAllByUser')
+      const { data: { data } } = await this.$login.post('sso/api/project/queryAllByUser')
       this.proList = data
       this.total = data.length
     },
@@ -120,7 +185,7 @@ export default {
         this.$message.error('描述不能为空')
         return false
       } else {
-        const { data: { data } } = await this.$http.post('http://192.168.1.254:10010/sso/api/project/saveOrUpdate', this.addList)
+        const { data: { data } } = await this.$login.post('sso/api/project/saveOrUpdate', this.addList)
         if (data === true) {
           this.$message.success('提交成功')
           this.addList.id = ''
@@ -151,8 +216,8 @@ export default {
         type: 'warning'
       })
         .then(async () => {
-          await this.$http.post(
-            'http://192.168.1.254:10010/sso/api/project/delete',
+          await this.$login.post(
+            'sso/api/project/delete',
             obj
           )
           // 删除成功
@@ -170,11 +235,11 @@ export default {
     },
     // 删除文件
     handleRemove (file, fileList) {
-      console.log(file, fileList)
+      // console.log(file, fileList)
     },
     // 点击文件
     handlePreview (file) {
-      console.log(file)
+      // console.log(file)
     },
     handleBannerSuccess (response) {
       this.addList.situationUrl = response.data
@@ -189,6 +254,102 @@ export default {
     },
     nextpage () {
       this.pageNum = this.pageNum + 1
+    },
+    // 用户查询
+    async queryUser (index, row) {
+      this.dialogUser = true
+      const params = {
+        projectId: row.id
+      }
+      const { data: { data } } = await this.$login.post('sso/api//project/queryLinkedUser', params)
+      this.userPlan = data
+      this.projectId = row.id
+    },
+    // 用户解绑
+    async delUser (index, row) {
+      const params = {
+        projectId: this.projectId,
+        userId: row.id
+      }
+      this.$confirm('此操作将解绑此用户, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(async () => {
+          const { data } = await this.$login.post(
+            'sso/api//project/deleteLinkedUser',
+            params
+          )
+          if (data.code === 100) {
+            this.$message.error(data.msg)
+          } else {
+            this.$message.success('解绑成功')
+            this.dialogUser = false
+            this.getproject()
+          }
+        })
+        .catch(() => {})
+    },
+    // 添加
+    async addUser (index, row) {
+      this.dialogUserAdd = true
+      const { data: { data } } = await this.$login.post('sso/api//emp/query')
+      this.personList = data
+      this.projectId = row.id
+    },
+    // 提交添加的用户
+    async sendUserData (index, row) {
+      const params = {
+        projectId: this.projectId,
+        username: row.user.name
+      }
+      this.$confirm('此操作将添加此用户, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(async () => {
+          const { data } = await this.$login.post(
+            'sso/api//project/addUserLink',
+            params
+          )
+          if (data.code === 100) {
+            this.$message.error(data.msg)
+          } else {
+            this.$message.success('添加成功')
+            this.dialogUserAdd = false
+            this.getproject()
+          }
+        })
+        .catch(() => {})
+    },
+    // 提交添加用户
+    async define () {
+      const params = {
+        projectId: this.projectId,
+        username: this.userOrTel
+      }
+      this.$confirm('确定给该园区绑定此用户?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(async () => {
+          const { data } = await this.$login.post(
+            'sso/api//project/addUserLink',
+            params
+          )
+          if (data.code === 100) {
+            this.$message.error(data.msg)
+          } else {
+            this.$message.success('添加成功')
+            this.userOrTel = ''
+            this.dialogUser = false
+            this.getproject()
+          }
+        })
+        .catch(() => {})
     }
   }
 }
@@ -213,6 +374,16 @@ export default {
   /deep/ .el-form {
     .el-form-item__content {
       width: 300px;
+    }
+  }
+  .userList {
+    .addUserBtn {
+      position: absolute;
+      top: 18px;
+      left: 24px;
+    }
+    .userTable {
+      margin-top: 20px;
     }
   }
 }

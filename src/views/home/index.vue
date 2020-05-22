@@ -73,7 +73,7 @@
             <i class="el-icon-arrow-down el-icon--right"></i>
           </span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item icon="el-icon-setting" command="setting">个人设置</el-dropdown-item>
+            <!-- <el-dropdown-item icon="el-icon-setting" command="setting">个人设置</el-dropdown-item> -->
             <el-dropdown-item icon="el-icon-lock" command="logout">退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>

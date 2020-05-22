@@ -4,7 +4,7 @@ import JSONBig from 'json-bigint'
 import Message from 'element-ui'
 const instance = axios.create({
   // 配置对象 基准路径 外部信息
-  baseURL: '',
+  baseURL: 'http://47.104.128.108:10020',
   transformResponse: [(data) => {
     // 对data进行任意格式的转换
     if (data) {

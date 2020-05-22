@@ -19,6 +19,7 @@ import SensorType from '@/views/sensortype'
 Vue.use(VueRouter)
 
 const router = new VueRouter({
+  // mode: 'history',
   routes: [
     { name: 'login', path: '/login', component: Login },
     {

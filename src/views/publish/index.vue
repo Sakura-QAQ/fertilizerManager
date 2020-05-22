@@ -1,76 +1,78 @@
 <template>
-<div class="container">
-  <el-card>
-    <div solt="header">
-      <my-bread>实况管理</my-bread>
-      <el-card style="margin-top:20px;">
-        <el-form class="select" :model="proID" align="left" >
-          <el-form-item label="请选择园区:" >
-            <el-select v-model="proID.projectId" @change="areaChange">
-              <el-option
-                v-for="item in proList"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id">
-              </el-option>
-            </el-select>
-          </el-form-item>
-        </el-form>
-        <el-button type="primary" @click="add">新增<i class="el-icon-folder-add el-icon--right"></i></el-button>
-        <el-button type="primary" @click="reset">重置<i class="el-icon-refresh el-icon--right"></i></el-button>
-        <el-button type="primary" @click="sending">提交<i class="el-icon-upload el-icon--right"></i></el-button>
-      </el-card>
-    </div>
-  </el-card>
-  <el-card class="AreaBody">
-    <div class="bgArea" :style="{backgroundImage: 'url(' + areaUrl  + ')'}">
-      <vue-drag-resize
-        v-for="(item, index) in marks"
-        :key="index"
-        :isResizable="false"
-        :w="150"
-        :h="74"
-        :x="item.left"
-        :y="item.top"
-        :isActive="false"
-        :parentLimitation="true"
-        @clicked="checkdrag($event, index, item)"
-        @dragging="dragFer($event, index, item)">
-        <div :class="{'fer': true, 'checkFer':index===num}">
-          <div class="sfjImg"></div>
-          <div class="showData">
-            <div class="ferzName">{{item.name}}</div>
-            <div class="status">
-              <div :class="[item.isOnline === 0? 'gray' : (item.status === 1? 'green' : 'none')]"></div>
-            </div>
-            <div class="jt-icon"></div>
-          </div>
-        </div>
-      </vue-drag-resize>
-      <vue-drag-resize
-        v-for="valve in Vavles"
-        :key="valve.id"
-        :isResizable="false"
-        :w="40"
-        :h="40"
-        :x="valve.left"
-        :y="valve.top"
-        :isActive="false"
-        :parentLimitation="true"
-        @clicked="checkvalve($event, valve)"
-        @dragging="dragValve($event, valve)"
-        @dragstop="out"
-        >
-        <el-button :class="[valve.onCheck === 0?'valve':'isActived']" type="warning" circle>
-          <i class="dcf-icon"></i>
-        </el-button>
-      </vue-drag-resize>
-      <div class="hover_con" v-show="seen" :style="positionStyle">
-        <div class="dcfTip">阀名称:{{VavlesName}}</div>
-        <div class="r-jt">阀状态:{{VavlesStatus}}</div>
+<div class="sence-container">
+  <div class="sence">
+    <el-card>
+      <div solt="header">
+        <my-bread>实况管理</my-bread>
+        <el-card style="margin-top:20px;">
+          <el-form class="select" :model="proID" align="left" >
+            <el-form-item label="请选择园区:" >
+              <el-select v-model="proID.projectId" @change="areaChange">
+                <el-option
+                  v-for="item in proList"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-form>
+          <el-button type="primary" @click="add">新增<i class="el-icon-folder-add el-icon--right"></i></el-button>
+          <el-button type="primary" @click="reset">重置<i class="el-icon-refresh el-icon--right"></i></el-button>
+          <el-button type="primary" @click="sending">提交<i class="el-icon-upload el-icon--right"></i></el-button>
+        </el-card>
       </div>
-    </div>
-  </el-card>
+    </el-card>
+    <el-card class="AreaBody">
+      <div class="bgArea" :style="{backgroundImage: 'url(' + areaUrl  + ')'}">
+        <vue-drag-resize
+          v-for="(item, index) in marks"
+          :key="index"
+          :isResizable="false"
+          :w="150"
+          :h="74"
+          :x="item.left"
+          :y="item.top"
+          :isActive="false"
+          :parentLimitation="true"
+          @clicked="checkdrag($event, index, item)"
+          @dragging="dragFer($event, index, item)">
+          <div :class="{'fer': true, 'checkFer':index===num}">
+            <div class="sfjImg"></div>
+            <div class="showData">
+              <div class="ferzName">{{item.name}}</div>
+              <div class="status">
+                <div :class="[item.isOnline === 0? 'gray' : (item.status === 1? 'green' : 'none')]"></div>
+              </div>
+              <div class="jt-icon"></div>
+            </div>
+          </div>
+        </vue-drag-resize>
+        <vue-drag-resize
+          v-for="valve in Vavles"
+          :key="valve.id"
+          :isResizable="false"
+          :w="40"
+          :h="40"
+          :x="valve.left"
+          :y="valve.top"
+          :isActive="false"
+          :parentLimitation="true"
+          @clicked="checkvalve($event, valve)"
+          @dragging="dragValve($event, valve)"
+          @dragstop="out"
+          >
+          <el-button :class="[valve.onCheck === 0?'valve':'isActived']" type="warning" circle>
+            <i :class="[valve.isOnline === 0? 'offline' : (valve.status === 0? 'dcf-off' : 'dcf-on')]"></i>
+          </el-button>
+        </vue-drag-resize>
+        <div class="hover_con" v-show="seen" :style="positionStyle">
+          <div class="dcfTip">阀名称:{{VavlesName}}</div>
+          <div class="r-jt">阀状态:{{VavlesStatus}}</div>
+        </div>
+      </div>
+    </el-card>
+  </div>
 </div>
 </template>
 
@@ -91,7 +93,7 @@ export default {
       seen: false,
       positionStyle: { top: 0, left: 0 },
       num: null,
-      imgUrl: 'http://192.168.1.254:10010/image/avatar/'
+      imgUrl: 'http://47.104.128.108:10010/image/avatar/'
     }
   },
   mounted () {
@@ -113,19 +115,19 @@ export default {
       const ID = {
         id: this.proID.projectId
       }
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10010/sso/api/project/queryById', ID)
+      const { data: { data } } = await this.$login.post('sso/api/project/queryById', ID)
       this.areaUrl = this.imgUrl + data.situationUrl
     },
     // 园区选择
     async getproject () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10010/sso/api/project/queryAllByUser')
+      const { data: { data } } = await this.$login.post('sso/api/project/queryAllByUser')
       this.proList = data
       this.proID.projectId = data[0].id
       this.areaUrl = this.imgUrl + data[0].situationUrl
     },
     // 通过园区获取施肥机
     async getferlist () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryByProjectId', this.proID)
+      const { data: { data } } = await this.$http.post('fertilizer/api/fertilizer/queryByProjectId', this.proID)
       // 合并后的阀名数组
       const vallist = []
       // 对应的施肥机id
@@ -136,7 +138,7 @@ export default {
         const ID = {
           id: data[i].id
         }
-        const res = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryValveAlias', ID)
+        const res = await this.$http.post('fertilizer/api/fertilizer/queryValveAlias', ID)
         const a = data[i].valveNum.split(',').map(Number)
         const b = res.data.data.split(',')
         const c = b.filter((_, index) => a.includes(index + 1))
@@ -178,7 +180,7 @@ export default {
       const proId = {
         id: this.proID.projectId
       }
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10010/sso/api/project/querySituationByPid', proId)
+      const { data: { data } } = await this.$http.post('fertilizer/api/situation/querySituationByPid', proId)
       if (data.length !== 0) {
         for (let i = 0; i < data.length; i++) {
           const element = data[i]
@@ -221,8 +223,16 @@ export default {
     checkvalve (e, valve) {
       this.seen = true
       this.VavlesName = valve.name
-      this.VavlesStatus = valve.status
-      // console.log(valve)
+      // this.VavlesStatus = valve.status
+      if (valve.isOnline === 0) {
+        this.VavlesStatus = '离线'
+      } else {
+        if (valve.status === 0) {
+          this.VavlesStatus = '关闭'
+        } else if (valve.status === 1) {
+          this.VavlesStatus = '开启'
+        }
+      }
     },
     // 点击组件外
     out () {
@@ -264,7 +274,7 @@ export default {
         }
         a.push(objval)
       }
-      const { data: { code } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/situation/addSituation', a)
+      const { data: { code } } = await this.$http.post('fertilizer/api/situation/addSituation', a)
       if (code === 200) {
         this.$message.success('提交成功')
       }
@@ -274,7 +284,7 @@ export default {
       const ID = {
         id: this.proID.projectId
       }
-      const { data } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryAddedMapFertilizer', ID)
+      const { data } = await this.$http.post('fertilizer/api/fertilizer/queryAddedMapFertilizer', ID)
       const ferlist = data.data
 
       if (data.code === 200 && data.msg === '没有新增施肥机') {
@@ -290,7 +300,7 @@ export default {
           const ID = {
             id: ferlist[i].id
           }
-          const res = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryValveAlias', ID)
+          const res = await this.$http.post('fertilizer/api/fertilizer/queryValveAlias', ID)
           const a = ferlist[i].valveNum.split(',').map(Number)
           const b = res.data.data.split(',')
           const c = b.filter((_, index) => a.includes(index + 1))
@@ -333,7 +343,7 @@ export default {
         type: 'warning'
       })
         .then(async () => {
-          await this.$http.post('http://192.168.1.254:10020/fertilizer/api/situation/situationReset', Id)
+          await this.$http.post('fertilizer/api/situation/situationReset', Id)
           this.$message.success('重置成功')
           this.getferlist()
         })
@@ -344,7 +354,12 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.container {
+.sence-container {
+  .sence {
+    /deep/ .is-always-shadow {
+      width: 1660px;
+    }
+  }
   .select {
     width: 81%;
     display: inline-block;
@@ -359,7 +374,7 @@ export default {
         position: relative;
         width: 1660px;
         height: 780px;
-        background: url(../../assets/images/jlh.jpg) center / cover no-repeat;
+        // background: url(../../assets/images/jlh.jpg) center / cover no-repeat;
         .fer {
           position: relative;
           width: 146px;
@@ -416,8 +431,10 @@ export default {
         }
         // 施肥机点击样式
         .checkFer {
-          border: 2px solid skyblue;
-          box-shadow: 0px 0px 15px skyblue inset;
+          // border: 2px solid skyblue;
+          // box-shadow: 0px 0px 15px skyblue inset;
+          box-shadow: 0px 0px 10px greenyellow inset;
+          border:2px solid greenyellow;
         }
         .hover_con {
           position: absolute;
@@ -432,17 +449,38 @@ export default {
         .valve {
           padding: 6px;
         }
-        .dcf-icon {
+        .offline {
           display: block;
           width: 28px;
           height: 28px;
           background: url('../../assets/icon/dcf-icon.png')no-repeat;
           background-size: 28px 28px;
         }
+        .dcf-off {
+          display: block;
+          width: 28px;
+          height: 28px;
+          background: url('../../assets/icon/dcf-off.png')no-repeat;
+          background-size: 28px 28px;
+        }
+        .dcf-on {
+          display: block;
+          width: 28px;
+          height: 28px;
+          background: url('../../assets/icon/dcf-on.png')no-repeat;
+          background-size: 28px 28px;
+        }
         // 阀点击样式
         .isActived {
-          background-color:rgb(84, 216, 8);
-          border-color: rgb(95, 233, 15);
+          // background-color:rgb(84, 216, 8);
+          border: 3px solid;
+          border-color: rgb(21, 211, 147);
+          // border-color: rgb(95, 233, 15);
+        }
+        // 阀默认样式
+        .el-button--warning {
+          background-color: #fff;
+          border-color: none;
         }
       }
     }

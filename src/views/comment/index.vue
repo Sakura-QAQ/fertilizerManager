@@ -41,6 +41,12 @@
                 <el-radio :label="1">无线阀</el-radio>
               </el-radio-group>
             </el-form-item>
+            <!-- <el-form-item label="状态：">
+              <el-radio-group v-model="addFerList.status">
+                <el-radio :label="0">不可用</el-radio>
+                <el-radio :label="1">可用</el-radio>
+              </el-radio-group>
+            </el-form-item> -->
             <el-form-item label="版本号：">
               <el-input v-model="addFerList.version"></el-input>
             </el-form-item>
@@ -68,10 +74,10 @@
         <el-table-column label="施肥机描述" prop="descr">
         </el-table-column>
         <el-table-column label="产品编号" prop="prodCode"></el-table-column>
-        <el-table-column label="是否在线" prop="isOnline"></el-table-column>
-        <el-table-column label="状态" prop="status"></el-table-column>
+        <el-table-column label="是否在线" prop="online"></el-table-column>
+        <el-table-column label="状态" prop="statusName"></el-table-column>
         <el-table-column label="dtu码" prop="dtuCode"></el-table-column>
-        <el-table-column label="阀类型" prop="valveType"></el-table-column>
+        <el-table-column label="阀类型" prop="valveName"></el-table-column>
         <el-table-column label="版本号" prop="version"></el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
@@ -135,6 +141,8 @@ export default {
         dtuCode: '',
         // 阀类型
         valveType: 0,
+        // 状态
+        // status: 0,
         // 版本号
         version: '',
         // 阀号
@@ -166,13 +174,31 @@ export default {
     },
     // 获取列表
     async getproject () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10010/sso/api/project/queryAllByUser')
+      const { data: { data } } = await this.$login.post('sso/api/project/queryAllByUser')
       this.proList = data
       this.proID.projectId = data[0].id
     },
     // 获取施肥机列表
     async getFerList () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryByProjectId', this.proID)
+      const { data: { data } } = await this.$http.post('fertilizer/api/fertilizer/queryByProjectId', this.proID)
+      for (let i = 0; i < data.length; i++) {
+        const element = data[i]
+        if (element.isOnline === 0) {
+          element.online = '离线'
+        } else {
+          element.online = '在线'
+        }
+        if (element.valveType === 0) {
+          element.valveName = '有线阀'
+        } else {
+          element.valveName = '无线阀'
+        }
+        if (element.status === 0) {
+          element.statusName = '不可用'
+        } else {
+          element.statusName = '可用'
+        }
+      }
       this.FerList = data
       this.total = data.length
     },
@@ -192,7 +218,7 @@ export default {
         type: 'warning'
       })
         .then(async () => {
-          await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/delete', ID)
+          await this.$http.post('fertilizer/api/fertilizer/delete', ID)
           this.$message.success('删除成功')
           const totalPage = Math.ceil((this.total - 1) / this.pageSize)
           const pageNum = this.pageNum > totalPage ? totalPage : this.pageNum
@@ -203,7 +229,6 @@ export default {
     },
     // 编辑施肥机
     editFerList (index, row) {
-      console.log(row)
       this.dialogFormVisible = true
       this.checkboxGroup = row.valveNum.split(',').map(Number)
       this.addFerList = {
@@ -213,6 +238,7 @@ export default {
         name: row.name,
         descr: row.descr,
         dtuCode: row.dtuCode,
+        // status: row.status,
         valveType: row.valveType,
         version: row.version,
         channels: row.channels
@@ -244,14 +270,14 @@ export default {
       const ferId = {
         id: row.id
       }
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryValveAlias', ferId)
+      const { data: { data } } = await this.$http.post('fertilizer/api/fertilizer/queryValveAlias', ferId)
       this.ValveName = data.split(',')
     },
     // 提交施肥机表单
     async submitFerForm () {
       this.addFerList.projectId = this.proID.projectId
       this.addFerList.valveNum = this.checkboxGroup.join(',')
-      const { data } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/saveOrUpdate', this.addFerList)
+      const { data } = await this.$http.post('fertilizer/api/fertilizer/saveOrUpdate', this.addFerList)
       if (data.code === 200) {
         this.$message.success('提交成功')
         this.dialogFormVisible = false
@@ -268,7 +294,7 @@ export default {
         id: this.ferValveId,
         valveAlias: this.ValveName.join(',')
       }
-      const { data } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/updateValveAlias', obj)
+      const { data } = await this.$http.post('fertilizer/api/fertilizer/updateValveAlias', obj)
       if (data.code === 200) {
         this.$message.success('提交成功')
         this.dialogValve = false

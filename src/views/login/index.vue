@@ -46,31 +46,25 @@ export default {
       this.loading = true
       // 对整个表单进行校验
       this.$refs.loginForm.validate(async valid => {
-        if (valid) {
-          // 发promise对象请求
-          try {
+        // 发promise对象请求
+        try {
           // 拿到登录的结果
-            const res = await this.$http.post('http://192.168.1.254:10010/sso/api/login', this.loginForm)
-            console.log(res)
-            if (res.data.code === 100 && res.data.msg === '用户不存在') {
-              this.$message.error('用户不存在')
-              return false
-            } else if (res.data.code === 100 && res.data.msg === '密码不正确') {
-              this.$message.error('密码错误')
-              return false
-            } else if (res.data.code === 200) {
-              this.$message.success('登录成功！')
-              // 存数据
-              window.sessionStorage.setItem('token', JSON.stringify(res.data.data))
-              // 跳路由
-              this.$router.push('/image')
-            }
-          } catch (err) {
-            this.$message.error('Error')
-            // console.log(err)
-            if (err) {
-              this.loading = false
-            }
+          const res = await this.$login.post('sso/api/login?app=fert_back', this.loginForm)
+          if (res.data.code === 100) {
+            this.$message.error(res.data.msg)
+            this.loading = false
+            return false
+          } else if (res.data.code === 200) {
+            this.$message.success('登录成功！请选择园区')
+            // 存数据
+            window.sessionStorage.setItem('token', JSON.stringify(res.data.data))
+            // 跳路由
+            this.$router.push('/image')
+          }
+        } catch (err) {
+          this.$message.error('Error')
+          if (err) {
+            this.loading = false
           }
         }
       })

@@ -79,7 +79,7 @@ export default {
     },
     // 获取所有类别
     async queryAllType () {
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10040/sensor/api/type/queryAll')
+      const { data: { data } } = await this.$sensor.post('sensor/api/type/queryAll')
       this.typelist = data
       this.total = data.length
     },
@@ -87,7 +87,7 @@ export default {
       this.dialogFlag = true
     },
     async submitTypeList () {
-      const { data: { code } } = await this.$http.post('http://192.168.1.254:10040/sensor/api/type/add', this.addTypeList)
+      const { data: { code } } = await this.$sensor.post('sensor/api/type/add', this.addTypeList)
       if (code === 200) {
         this.$message.success('添加成功')
         this.addTypeList = {

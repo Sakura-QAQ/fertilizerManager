@@ -151,8 +151,8 @@ export default {
       const ID = {
         id: this.addAreaList.fertilizerId
       }
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryValveAlias', ID)
-      const res = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryById', ID)
+      const { data: { data } } = await this.$http.post('fertilizer/api/fertilizer/queryValveAlias', ID)
+      const res = await this.$http.post('fertilizer/api/fertilizer/queryById', ID)
       const valnum = res.data.data.valveNum.split(',').map(Number)
       const vals = data.split(',')
       this.Vals = vals.filter((_, index) => valnum.includes(index + 1))
@@ -168,8 +168,8 @@ export default {
     async getproject () {
       const {
         data: { data }
-      } = await this.$http.post(
-        'http://192.168.1.254:10010/sso/api/project/queryAllByUser'
+      } = await this.$login.post(
+        'sso/api/project/queryAllByUser'
       )
       this.proList = data
       this.proID.projectId = data[0].id
@@ -185,7 +185,7 @@ export default {
       const {
         data: { data }
       } = await this.$http.post(
-        'http://192.168.1.254:10020/fertilizer/api/area/queryByProjectId',
+        'fertilizer/api/area/queryByProjectId',
         this.proID
       )
       const ferlist = this.FerList
@@ -196,7 +196,7 @@ export default {
         let ID = {
           id: arealist[i].fertilizerId
         }
-        const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryValveAlias', ID)
+        const { data: { data } } = await this.$http.post('fertilizer/api/fertilizer/queryValveAlias', ID)
         const b = data.split(',')
         arealist[i].fergroup = b.filter((_, index) => a.includes(index + 1)).join(',')
         for (let j = 0; j < ferlist.length; j++) {
@@ -213,7 +213,7 @@ export default {
       const {
         data: { data }
       } = await this.$http.post(
-        'http://192.168.1.254:10020/fertilizer/api/fertilizer/queryByProjectId',
+        'fertilizer/api/fertilizer/queryByProjectId',
         this.proID
       )
       this.FerList = data
@@ -227,7 +227,7 @@ export default {
       const ID = {
         id: this.addAreaList.fertilizerId
       }
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryValveAlias', ID)
+      const { data: { data } } = await this.$http.post('fertilizer/api/fertilizer/queryValveAlias', ID)
       const valnum = this.FerList[0].valveNum.split(',').map(Number)
       const vals = data.split(',')
       this.Vals = vals.filter((_, index) => valnum.includes(index + 1))
@@ -247,8 +247,8 @@ export default {
       const ID = {
         id: row.fertilizerId
       }
-      const { data: { data } } = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryValveAlias', ID)
-      const res = await this.$http.post('http://192.168.1.254:10020/fertilizer/api/fertilizer/queryById', ID)
+      const { data: { data } } = await this.$http.post('fertilizer/api/fertilizer/queryValveAlias', ID)
+      const res = await this.$http.post('fertilizer/api/fertilizer/queryById', ID)
       const valnum = res.data.data.valveNum.split(',').map(Number).sort()
       const groupIndex = []
       const a = row.fertilizerValves.split(',').map(Number)
@@ -281,7 +281,7 @@ export default {
       })
         .then(async () => {
           await this.$http.post(
-            'http://192.168.1.254:10020/fertilizer/api/area/delete',
+            'fertilizer/api/area/delete',
             ID
           )
           this.$message.success('删除成功')
@@ -322,7 +322,7 @@ export default {
       }
       this.addAreaList.fertilizerValves = this.ferindex.join(',')
       const res = await this.$http.post(
-        'http://192.168.1.254:10020/fertilizer/api/area/saveOrUpdate',
+        'fertilizer/api/area/saveOrUpdate',
         this.addAreaList
       )
       if (res.data.code === 200) {
