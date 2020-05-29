@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="area-container">
     <el-card>
       <div solt="header">
         <my-bread>温室管理</my-bread>
@@ -321,23 +321,29 @@ export default {
         this.ferindex.push(getindex(this.AllValsName, element))
       }
       this.addAreaList.fertilizerValves = this.ferindex.join(',')
-      const res = await this.$http.post(
-        'fertilizer/api/area/saveOrUpdate',
-        this.addAreaList
-      )
-      if (res.data.code === 200) {
-        this.$message.success('提交成功')
+      if (this.checkboxGroup.length === 0) {
+        this.$message.error('阀号为必选项')
+        return false
+      } else {
+        const res = await this.$http.post(
+          'fertilizer/api/area/saveOrUpdate',
+          this.addAreaList
+        )
+        if (res.data.code === 200) {
+          this.$message.success('提交成功')
+        }
+        this.dialogFlag = false
+        this.ferindex = []
+        this.getAreaList()
       }
-      this.dialogFlag = false
-      this.ferindex = []
-      this.getAreaList()
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
-.container {
+.area-container {
+  text-align: center;
   /deep/.el-dialog {
     width: 680px !important;
   }

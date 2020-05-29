@@ -6,7 +6,7 @@
         <el-form align="right">
           <el-button type="primary" @click="add">添加园区</el-button>
         </el-form>
-        <el-dialog :visible.sync="dialogFlag" :close-on-click-modal="false">
+        <el-dialog :visible.sync="dialogFlag" :close-on-click-modal="false" :show-close="false">
           <el-form :model="addList">
             <el-form-item label="项目名称：">
               <el-input v-model="addList.name"></el-input>
@@ -25,15 +25,19 @@
                 :on-remove="handleRemove"
                 :file-list="fileList"
                 :auto-upload="false"
-                :on-success="handleBannerSuccess">
+                :limit="1"
+                :on-exceed="handleExceed"
+                :on-success="handleBannerSuccess"
+                :before-upload="beforeAvatarUpload">
                 <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
                 <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
-                <div slot="tip" class="el-upload__tip">只能上传jpg/png文件</div>
+                <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过2MB</div>
               </el-upload>
             </el-form-item>
           </el-form>
           <div slot="footer" class="dialog-footer">
-            <el-button @click="dialogFlag = false">取 消</el-button>
+            <el-button @click="returnImage">取 消</el-button>
+            <!-- <el-button @click="dialogFlag = false">取 消</el-button> -->
             <el-button type="primary" @click="submitproject">确 定</el-button>
           </div>
         </el-dialog>
@@ -176,7 +180,7 @@ export default {
       this.addList.descr = ''
       this.addList.situationUrl = ''
     },
-    // 提交项目
+    // 提交项目表单
     async submitproject () {
       if (this.addList.name === '') {
         this.$message.error('名字不能为空')
@@ -193,9 +197,15 @@ export default {
           this.addList.descr = ''
           this.addList.situationUrl = ''
           this.dialogFlag = false
+          this.$refs.upload.uploadFiles = []
           this.getproject()
         }
       }
+    },
+    // 返回
+    returnImage () {
+      this.dialogFlag = false
+      this.$refs.upload.uploadFiles = []
     },
     // 编辑项目
     async editproject (index, row) {
@@ -229,6 +239,12 @@ export default {
         })
         .catch(() => {})
     },
+    // dialog关闭的回调
+    closeDialog () {
+      console.log(111)
+      this.dialogFlag = false
+      this.$refs.upload.uploadFiles = []
+    },
     // 上传文件
     submitUpload () {
       this.$refs.upload.submit()
@@ -239,11 +255,23 @@ export default {
     },
     // 点击文件
     handlePreview (file) {
-      // console.log(file)
+      console.log(file)
     },
     handleBannerSuccess (response) {
       this.addList.situationUrl = response.data
       // this.$refs.upload.uploadFiles = []
+    },
+    // 文件选择限制
+    handleExceed (files, fileList) {
+      this.$message.warning('限制选择 1 个文件,请删除当前文件后在选择')
+    },
+    // 图片上传
+    beforeAvatarUpload (file) {
+      const isLt2M = file.size / 1024 / 1024 < 2
+      if (!isLt2M) {
+        this.$message.error('上传图片大小不能超过 2MB!')
+      }
+      return isLt2M
     },
     // 分页
     currentchange (newPage) {

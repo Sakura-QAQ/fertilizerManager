@@ -1,8 +1,8 @@
 <template>
   <div>
     <el-card>
-      <div slot="header">
-        <my-bread>温室管理</my-bread>
+      <div solt="header">
+        <my-bread></my-bread>
       </div>
     </el-card>
   </div>

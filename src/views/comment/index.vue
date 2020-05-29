@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="fertilazer_container">
     <el-card>
       <div solt="header">
         <my-bread>施肥机管理</my-bread>
@@ -238,7 +238,6 @@ export default {
         name: row.name,
         descr: row.descr,
         dtuCode: row.dtuCode,
-        // status: row.status,
         valveType: row.valveType,
         version: row.version,
         channels: row.channels
@@ -277,15 +276,20 @@ export default {
     async submitFerForm () {
       this.addFerList.projectId = this.proID.projectId
       this.addFerList.valveNum = this.checkboxGroup.join(',')
-      const { data } = await this.$http.post('fertilizer/api/fertilizer/saveOrUpdate', this.addFerList)
-      if (data.code === 200) {
-        this.$message.success('提交成功')
-        this.dialogFormVisible = false
-        this.getFerList().then(res => {
-          this.clear()
-        })
+      if (this.checkboxGroup.length === 0) {
+        this.$message.error('电磁阀为必选项')
+        return false
       } else {
-        this.$message.error(data.msg)
+        const { data } = await this.$http.post('fertilizer/api/fertilizer/saveOrUpdate', this.addFerList)
+        if (data.code === 200) {
+          this.$message.success('提交成功')
+          this.dialogFormVisible = false
+          this.getFerList().then(res => {
+            this.clear()
+          })
+        } else {
+          this.$message.error(data.msg)
+        }
       }
     },
     // 提交阀名
@@ -335,7 +339,8 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.container {
+.fertilazer_container {
+  text-align: center;
   /deep/.el-dialog {
     width: 780px !important;
   }
